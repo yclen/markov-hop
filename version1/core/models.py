@@ -221,18 +221,17 @@ def compute_2p_rates(k_ex, k_ex2, k_1, k_fluor, g_factor=G_FACTOR):
     k_1       : float  S1 → ground decay rate.
     k_fluor   : float  Upper state fluorescence rate.
     g_factor  : float  Pulsed enhancement factor (default G_FACTOR ≈ 125,000).
-                       Pass 1.0 for CW excitation.
+                       Applied as a post-scaling on k_emit. Pass 1.0 for CW.
 
     Returns
     -------
     k_emit : float
     """
-    k_ex2_eff = k_ex2 * g_factor
-    dt    = P_MAX / max(k_ex, k_ex2_eff, k_1, k_fluor)
-    Pex   = k_ex      * dt
-    Pex2  = k_ex2_eff * dt
-    P1    = k_1       * dt
-    Pfluor = k_fluor  * dt
+    dt     = P_MAX / max(k_ex, k_ex2, k_1, k_fluor)
+    Pex    = k_ex    * dt
+    Pex2   = k_ex2   * dt
+    P1     = k_1     * dt
+    Pfluor = k_fluor * dt
 
     M, emit_mask = build_2p_matrix(Pex, Pex2, P1, Pfluor)
 
@@ -242,4 +241,4 @@ def compute_2p_rates(k_ex, k_ex2, k_1, k_fluor, g_factor=G_FACTOR):
     steady /= steady.sum()
 
     k_emit = float(emit_mask @ steady) / dt
-    return k_emit
+    return k_emit * g_factor
