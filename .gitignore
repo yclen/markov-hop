@@ -1,0 +1,9 @@
+# Ignore everything
+*
+
+# Except this file
+!.gitignore
+
+# Except version1 and all its contents
+!version1/
+!version1/**
