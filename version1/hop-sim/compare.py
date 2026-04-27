@@ -55,7 +55,6 @@ def run_compare(kh=10.0, n_mediators=5, step_size=0.01, n_sims=200_000, bin_mult
     ax1.legend(lines1 + lines2, labels1 + labels2, fontsize=11)
 
     plt.tight_layout()
-    plt.savefig("compare.png", dpi=150)
     plt.show()
 
 

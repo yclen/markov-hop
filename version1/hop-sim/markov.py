@@ -44,9 +44,9 @@ def run_markov(kh=10.0, n_steps=100, n_mediators=1):
     mean_t  : float                             - mean absorption time in ns
     """
 
-    dt = 0.1 / kh
-    Ph = kh * dt
-    assert 0 <= Ph <= 1, "Ph out of range, reduce dt or kh"
+    Ph = 0.1
+    dt = Ph / kh
+    
 
     M = build_matrix(Ph, n_mediators)
 
@@ -77,6 +77,11 @@ def run_markov(kh=10.0, n_steps=100, n_mediators=1):
     return history, times, mean_t, duration
 
 
+
+def get_migration_time(kh=10.0, n_mediators=1):
+    history, times, mean_t, duration = run_markov(kh=kh, n_steps=80*n_mediators**2, n_mediators=n_mediators)
+    return mean_t
+
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
@@ -86,8 +91,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     KH          = args.kh
-    N_STEPS     = args.steps
     N_MEDIATORS = args.m
+    N_STEPS     = 80*N_MEDIATORS**2
 
     history, times, mean_t, duration = run_markov(kh=KH, n_steps=N_STEPS, n_mediators=N_MEDIATORS)
 
@@ -117,5 +122,4 @@ if __name__ == "__main__":
     ax.legend()
 
     plt.tight_layout()
-    plt.savefig("markov_pdf_cdf.png", dpi=150)
     plt.show()
