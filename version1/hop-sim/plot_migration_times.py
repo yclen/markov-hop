@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from scipy.optimize import curve_fit
 
+LOG_Z = False
+
 csv_path = os.path.join(os.path.dirname(__file__), "migration_times.csv")
 df = pd.read_csv(csv_path)
 
@@ -74,17 +76,20 @@ print(f"\n  R² (t vs N,  kh={fixed_kh:.3g}):  M1={r2_1_kh:.6f}  M2={r2_2_kh:.6f
 print(f"  R² (t vs kh, N=5):          M1={r2_1_nm:.6f}  M2={r2_2_nm:.6f}")
 
 # ── 3D surface ────────────────────────────────────────────────────────
+def z(arr):
+    return np.log10(arr) if LOG_Z else arr
+
 fig1 = plt.figure(figsize=(11, 7))
 ax = fig1.add_subplot(111, projection="3d")
-ax.plot_surface(np.log10(KH), NM, pivot.values,
+ax.plot_surface(np.log10(KH), NM, z(pivot.values),
                 cmap="viridis", linewidth=0, antialiased=True, alpha=0.8)
-ax.plot_surface(np.log10(KH), NM, fit1_surf,
+ax.plot_surface(np.log10(KH), NM, z(fit1_surf),
                 color="red", linewidth=0, antialiased=True, alpha=0.2)
-ax.plot_surface(np.log10(KH), NM, fit2_surf,
+ax.plot_surface(np.log10(KH), NM, z(fit2_surf),
                 color="cyan", linewidth=0, antialiased=True, alpha=0.2)
 ax.set_xlabel("log₁₀(k_h)")
 ax.set_ylabel("N mediators")
-ax.set_zlabel("Mean migration time (ns)")
+ax.set_zlabel("log₁₀(mean migration time)" if LOG_Z else "Mean migration time (ns)")
 ax.set_title(f"M1 (red) R²={r2_1:.4f}  |  M2 (cyan) R²={r2_2:.4f}")
 
 # ── t vs N at fixed kh ≈ 10 ──────────────────────────────────────────
