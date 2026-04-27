@@ -27,7 +27,7 @@ def build_matrix(Ph, n_mediators):
     return M
 
 
-def run_markov(kh=10.0, n_steps=100, n_mediators=1):
+def run_markov(kh=10.0, n_steps=100, n_mediators=1, verbose=True):
     """
     Simulate a 1D random walk with matrix multiplication.
 
@@ -69,17 +69,18 @@ def run_markov(kh=10.0, n_steps=100, n_mediators=1):
     mean_t = np.sum((1 - cdf) * dt)
     duration = t_end - t_start
 
-    print(f"Steps completed        : {n_steps}")
-    print(f"Time elapsed           : {round(duration,6)} s")
-    print(f"Absorbed               : {cdf[-1]:.4f}")
-    print(f"Mean absorption time   : {mean_t:.4f} ns")
+    if verbose:
+        print(f"Steps completed        : {n_steps}")
+        print(f"Time elapsed           : {round(duration,6)} s")
+        print(f"Absorbed               : {cdf[-1]:.4f}")
+        print(f"Mean absorption time   : {mean_t:.4f} ns")
 
     return history, times, mean_t, duration
 
 
 
 def get_migration_time(kh=10.0, n_mediators=1):
-    history, times, mean_t, duration = run_markov(kh=kh, n_steps=80*n_mediators**2, n_mediators=n_mediators)
+    history, times, mean_t, duration = run_markov(kh=kh, n_steps=80*n_mediators**2, n_mediators=n_mediators, verbose=False)
     return mean_t
 
 if __name__ == "__main__":
