@@ -5,9 +5,9 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from scipy.optimize import curve_fit
 
-LOG_Z = False
+LOG_Z = True
 
-csv_path = os.path.join(os.path.dirname(__file__), "migration_times.csv")
+csv_path = os.path.join(os.path.dirname(__file__), "migration_times2.csv")
 df = pd.read_csv(csv_path)
 
 kh_values = np.sort(df["kh"].unique())

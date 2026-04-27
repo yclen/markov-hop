@@ -4,7 +4,7 @@ import os
 from tqdm import tqdm
 from markov import get_migration_time
 
-kh_values = np.logspace(-2, 2, 50)   # 0.01 to 100
+kh_values = np.logspace(0, 2, 50)   # 0.01 to 100
 nm_values = np.arange(1, 21)         # 1 to 20
 
 rows = []
@@ -17,7 +17,7 @@ with tqdm(total=total, desc="Sweeping") as pbar:
             rows.append((kh, n_med, mean_t))
             pbar.update(1)
 
-out_path = os.path.join(os.path.dirname(__file__), "migration_times.csv")
+out_path = os.path.join(os.path.dirname(__file__), "migration_times2.csv")
 with open(out_path, "w", newline="") as f:
     writer = csv.writer(f)
     writer.writerow(["kh", "n_mediators", "mean_t"])

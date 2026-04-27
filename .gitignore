@@ -7,3 +7,6 @@
 # Except version1 and all its contents
 !version1/
 !version1/**
+
+# Exclude generated data
+version1/data/
