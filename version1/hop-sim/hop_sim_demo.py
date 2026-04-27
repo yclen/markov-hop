@@ -50,6 +50,8 @@ if __name__ == "__main__":
     parser.add_argument("--u",         type=str,   default="s",     help="time units for plot")
     args = parser.parse_args()
 
+    print("Keybinds: [R] reset triplet  |  [P] run Monte Carlo plot  |  [Q] quit")
+
     p_visual = mp.Process(target=_run_visual, args=(args.kh, args.m, args.step_size, args.sims, args.bin, args.u))
 
     p_visual.start()

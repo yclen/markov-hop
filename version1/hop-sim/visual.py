@@ -10,9 +10,10 @@ def run_simulation(kh, n_mediators, on_p=None, on_q=None):
     WIDTH, HEIGHT = (n_mediators * 120 + 300), 300
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     pygame.display.set_caption("Linked Molecule System")
-    icon = pygame.image.load("molecule-icon.png")
+    icon = pygame.image.load("version1/hop-sim/molecule-icon.png")
     pygame.display.set_icon(icon)
     clock = pygame.time.Clock()
+    print("Keybinds: [R] reset triplet  |  [P] run Monte Carlo plot  |  [Q] quit")
 
     # --- Config ---
     RADIUS        = 30
