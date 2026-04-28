@@ -102,11 +102,13 @@ def view_1p(k_ex, k_fluor):
 # ── 2-Photon ──────────────────────────────────────────────────────────────────
 
 def view_2p(k_ex, k_ex2, k_1, k_fluor, g_factor):
-    dt     = P_MAX / max(k_ex, k_ex2, k_1, k_fluor)
-    Pex    = k_ex    * dt
-    Pex2   = k_ex2   * dt
-    P1     = k_1     * dt
-    Pfluor = k_fluor * dt
+    k_ex_eff  = k_ex  * g_factor
+    k_ex2_eff = k_ex2 * g_factor
+    dt     = P_MAX / max(k_ex_eff, k_ex2_eff, k_1, k_fluor)
+    Pex    = k_ex_eff  * dt
+    Pex2   = k_ex2_eff * dt
+    P1     = k_1       * dt
+    Pfluor = k_fluor   * dt
 
     M, emit_mask = build_2p_matrix(Pex, Pex2, P1, Pfluor)
     labels = ["Ground", "Intermediate", "Excited"]

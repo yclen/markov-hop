@@ -128,7 +128,7 @@ def build_tta_matrix(n_med, Ph, Pex, Pdecay=0.0, homo_tta=False, f_spin=0.4):
 
 
 def _steady_state(M):
-    """Sparse eigenvector solve for the eigenvalue-1 steady-state vector."""
+    """Return the steady-state probability vector (eigenvector for eigenvalue 1)."""
     _, eigvec = eigs(csc_matrix(M), k=1, which="LM", sigma=1.0)
     steady = eigvec[:, 0].real
     steady /= steady.sum()
@@ -221,17 +221,21 @@ def compute_2p_rates(k_ex, k_ex2, k_1, k_fluor, g_factor=G_FACTOR):
     k_1       : float  S1 → ground decay rate.
     k_fluor   : float  Upper state fluorescence rate.
     g_factor  : float  Pulsed enhancement factor (default G_FACTOR ≈ 125,000).
-                       Applied as a post-scaling on k_emit. Pass 1.0 for CW.
+                       Scales k_ex and k_ex2 to represent peak pulsed intensity.
+                       Pass 1.0 for CW. Saturation level (k_fluor) is unaffected.
 
     Returns
     -------
     k_emit : float
     """
-    dt     = P_MAX / max(k_ex, k_ex2, k_1, k_fluor)
-    Pex    = k_ex    * dt
-    Pex2   = k_ex2   * dt
-    P1     = k_1     * dt
-    Pfluor = k_fluor * dt
+    k_ex_eff  = k_ex  * g_factor
+    k_ex2_eff = k_ex2 * g_factor
+
+    dt     = P_MAX / max(k_ex_eff, k_ex2_eff, k_1, k_fluor)
+    Pex    = k_ex_eff  * dt
+    Pex2   = k_ex2_eff * dt
+    P1     = k_1       * dt
+    Pfluor = k_fluor   * dt
 
     M, emit_mask = build_2p_matrix(Pex, Pex2, P1, Pfluor)
 
@@ -241,4 +245,4 @@ def compute_2p_rates(k_ex, k_ex2, k_1, k_fluor, g_factor=G_FACTOR):
     steady /= steady.sum()
 
     k_emit = float(emit_mask @ steady) / dt
-    return k_emit * g_factor
+    return k_emit
