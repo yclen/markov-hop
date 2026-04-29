@@ -12,7 +12,7 @@ from ss_1p import sweep_1p
 # ── Parameters ────────────────────────────────────────────────────────────────
 
 MODEL = "1p"
-DATE  = None   # None → today
+DATE  = "2026-04-28"   # None → today
 N     = 0      # 0 = most recent
 
 

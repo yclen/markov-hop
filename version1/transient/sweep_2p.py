@@ -13,20 +13,20 @@ from transient_pulse import run_2p
 
 # Excitation profile
 MODE      = "pulse"
-T_TOTAL   = 20.0
-T_ON      = 5.0
+T_TOTAL   = 200.0
+T_ON      = 100.0
 T_OFF     = 3.0
 N_PULSES  = 3
 
 # 2p model (g_factor not used — transient pulse profile carries the I^2 enhancement;
 #           k_ex2 = k_ex since both transitions share the same laser intensity)
-K1_2P      = 1e3     # S1 decay rate
+K1_2P      = 1e5     # S1 decay rate
 KFLUOR_2P  = 0.5
 
 # k_ex sweep (logspace)
-KEX_MIN   = 1e-3
+KEX_MIN   = 1e-6
 KEX_MAX   = 1e2
-N_POINTS  = 50
+N_POINTS  = 100
 
 UNITS     = "ns"
 
