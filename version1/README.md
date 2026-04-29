@@ -33,6 +33,7 @@ The TTA model is compared against a **1-photon** (linear) fluorophore and a **2-
 version1/
 ├── core/                   # Shared computation modules
 │   ├── models.py           # TTA, 1p, 2p Markov matrix builders and rate solvers
+│   ├── data_io.py          # CSV sweep I/O helpers (save_sweep, get_file, load_sweep)
 │   └── view_matrix.py      # CLI tool to visualise any model's transition matrix
 │
 ├── hop-sim/                # Basic 1D random walk — migration time analysis
@@ -40,7 +41,9 @@ version1/
 │   ├── monte_carlo.py      # Stochastic hopping simulation
 │   ├── compare.py          # Markov vs Monte Carlo comparison plot
 │   ├── param_sweep_hop.py  # Sweep k_h and N, saves migration_times.csv
-│   └── plot_migration_times.py  # 3D surface + power-law fits
+│   ├── plot_migration_times.py  # 3D surface + power-law fits
+│   ├── visual.py           # Interactive pygame visualisation of hopping triplet
+│   └── hop_sim_demo.py     # Launches visual window with Monte Carlo on keypress
 │
 ├── steady-state/           # Steady-state emission rate vs k_ex sweeps
 │   ├── ss_1p.py            # sweep_1p() — 1-photon model
@@ -48,7 +51,15 @@ version1/
 │   ├── ss_tta.py           # sweep_tta() — TTA chain model
 │   └── plot_steady_states.py  # Runs all three sweeps and plots 3-panel comparison
 │
-├── transient/              # Time-domain simulations (to be built)
+├── transient/              # Time-domain (pulsed excitation) simulations
+│   ├── transient_pulse.py  # Core engine: make_excitation_profile, run_1p/2p/tta
+│   ├── sweep_1p.py         # k_ex sweep for 1-photon transient, saves CSV
+│   ├── sweep_2p.py         # k_ex sweep for 2-photon transient, saves CSV
+│   ├── sweep_tta.py        # k_ex sweep for TTA transient (homo + hetero), saves CSV
+│   ├── plot_1p.py          # Transient vs steady-state overlay for 1-photon
+│   ├── plot_2p.py          # Transient vs steady-state overlay for 2-photon
+│   └── plot_tta.py         # Transient vs steady-state overlay for TTA (4 curves)
+│
 ├── comparisons/            # Cross-model analysis (to be built)
 │
 └── data/                   # Generated data — not tracked by git
@@ -78,4 +89,13 @@ python plot_steady_states.py
 cd hop-sim
 python param_sweep_hop.py     # generates migration_times.csv
 python plot_migration_times.py
+```
+
+**Transient (pulsed) sweep and plot:**
+```bash
+cd transient
+python sweep_tta.py           # generates TTA transient CSV (hetero + homo columns)
+python plot_tta.py            # transient vs steady-state overlay
+python sweep_1p.py && python plot_1p.py
+python sweep_2p.py && python plot_2p.py
 ```
