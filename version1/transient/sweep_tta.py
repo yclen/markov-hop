@@ -15,13 +15,13 @@ from transient_pulse import run_tta
 # Excitation profile
 MODE      = "pulse"
 T_TOTAL   = 200.0
-T_ON      = 100.0
+T_ON      = 10.0
 T_OFF     = 3.0
 N_PULSES  = 3
 
 # TTA model
 N_MED      = 4
-KH_LIST    = [0.01, 1, 10.0, 100.0]
+KH_LIST    = [0.01, 1, 10.0]
 KDECAY_TTA = 1e-5
 F_SPIN     = 1.0
 

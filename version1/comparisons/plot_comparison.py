@@ -16,7 +16,12 @@ from ss_tta import sweep_tta
 
 DATE_1P  = None;  N_1P  = 0
 DATE_2P  = None;  N_2P  = 0
-DATE_TTA = None;  N_TTA = 0
+TTA_FILES = [
+    {"date": None, "n": 0},
+    {"date": None, "n": 1}              # most recent file today
+    # {"date": "2026-04-28", "n": 0},    # specific date
+    # {"date": None, "n": 1, "kh_plot": [1.0]},  # per-file k_h override
+]
 
 # ── Plot control ──────────────────────────────────────────────────────────────
 
@@ -29,8 +34,8 @@ SHOW_2P_TRANSIENT = True    # False → SS only, no file needed
 SHOW_TTA          = True
 
 SHOW_SS           = True    # steady-state lines for all active models
-SHOW_HOMO         = True    # TTA dashed homo lines
-KH_PLOT           = [1]    # None → all TTA k_h values; e.g. [1.0, 10.0]
+SHOW_HOMO         = False    # TTA dashed homo lines
+KH_PLOT           = [10]    # None → all TTA k_h values; e.g. [1.0, 10.0]
 
 # ── Standalone SS params ──────────────────────────────────────────────────────
 # Used for 1p / 2p when SHOW_Xp_TRANSIENT = False (no file loaded).
@@ -47,19 +52,17 @@ K_FLUOR_2P  = 0.5
 G_FACTOR_2P = np.sqrt(1e4)          # None = sqrt(T_total/t_on) from file; float = explicit override
 
 # ── Style ─────────────────────────────────────────────────────────────────────
-# Each model has a (transient, SS) color pair — same hue, different shade.
-# TTA cycles through pairs starting with brown (avoids blue/red conflict).
 
-COLOR_1P = ("#90CAF9", "#1565C0")   # light blue / dark blue
-COLOR_2P = ("#EF9A9A", "#B71C1C")   # light red  / dark red
+COLOR_1P_SS    = "blue"
+COLOR_1P = "cornflowerblue"
 
-TTA_COLORS = [
-    ("#81C784", "#2E7D32"),   # green
-    ("#A1887F", "#4E342E"),   # brown
-    ("#CE93D8", "#6A1B9A"),   # purple
-    ("#80CBC4", "#00695C"),   # teal
-    ("#AED581", "#558B2F"),   # olive
-]
+COLOR_2P_SS    = "red"
+COLOR_2P = "tomato"
+
+TTA_COLORS    = ["tab:orange", "tab:green", "tab:purple", "tab:brown",
+                 "tab:pink",   "tab:gray",  "tab:olive",  "tab:cyan"]
+TTA_SS_COLORS = ["goldenrod",  "darkgreen",  "orchid",     "sienna",
+                 "hotpink",    "slategray", "darkkhaki",  "cadetblue"]
 
 LW = 0.9
 
@@ -129,7 +132,7 @@ if __name__ == "__main__":
                 kex_1p, phot_1p, params_1p = load_sweep(path)
                 _print_file_info("1p", path, kex_1p, params_1p)
                 ax.plot(_I_avg(kex_1p, params_1p), _cps(phot_1p, params_1p["T_total"]),
-                        color=COLOR_1P[0], lw=LW, ls="-", label="1p  pulsed")
+                        color=COLOR_1P, lw=LW, ls="-", label="1p  pulsed")
                 kex_ss     = kex_1p
                 k_fluor_ss = params_1p["k_fluor"]
                 if pulse_params is None:
@@ -146,7 +149,7 @@ if __name__ == "__main__":
             print("  Computing 1p SS ...")
             _, k_ss = sweep_1p(kex_ss, k_fluor=k_fluor_ss)
             ax.plot(_I_peak(kex_ss), k_ss * _PER_NS,
-                    color=COLOR_1P[1], lw=LW, ls="-", label="1p  CW")
+                    color=COLOR_1P_SS, lw=LW, ls="-", label="1p")
 
     # ── 2p ───────────────────────────────────────────────────────────────────
     if SHOW_2P:
@@ -158,7 +161,7 @@ if __name__ == "__main__":
                 kex_2p, phot_2p, params_2p = load_sweep(path)
                 _print_file_info("2p", path, kex_2p, params_2p)
                 ax.plot(_I_avg(kex_2p, params_2p), _cps(phot_2p, params_2p["T_total"]),
-                        color=COLOR_2P[0], lw=LW, ls="-", label="2p  pulsed")
+                        color=COLOR_2P, lw=LW, ls="-", label="2p  pulsed")
                 kex_ss     = kex_2p
                 k_1_ss     = params_2p["k_1"]
                 k_fluor_ss = params_2p["k_fluor"]
@@ -182,59 +185,74 @@ if __name__ == "__main__":
             print(f"  Computing 2p SS  (g_factor={g_ss:.3g}) ...")
             _, k_ss = sweep_2p(kex_ss, k_1=k_1_ss, k_fluor=k_fluor_ss, g_factor=g_ss)
             ax.plot(_I_peak(kex_ss), k_ss * _PER_NS,
-                    color=COLOR_2P[1], lw=LW, ls="-", label=f"2p  CW  (g={g_ss:.2g})")
+                    color=COLOR_2P_SS, lw=LW, ls="-", label=f"2p")
 
     # ── TTA ──────────────────────────────────────────────────────────────────
     if SHOW_TTA:
-        try:
-            path = get_file(n=N_TTA, model="tta", date=DATE_TTA)
-            kex_tta, photons, photons_homo, params_tta = _normalize_tta(load_sweep(path))
-            kh_list = list(photons.keys())
-            _print_file_info("TTA", path, kex_tta, params_tta,
-                             extra=[f"k_h   : {kh_list}",
-                                    f"homo  : {photons_homo is not None}"])
-            if pulse_params is None:
-                pulse_params = params_tta
+        tta_color_idx = 0   # increments across all files × k_h so colors never repeat
 
-            kh_plot = [kh for kh in kh_list if KH_PLOT is None or kh in KH_PLOT]
-            if not kh_plot:
-                raise ValueError(f"KH_PLOT={KH_PLOT} matched none of available k_h: {kh_list}")
+        for file_spec in TTA_FILES:
+            date_tta = file_spec.get("date", None)
+            n_tta    = file_spec.get("n", 0)
+            kh_override = file_spec.get("kh_plot", None)   # per-file filter, falls back to KH_PLOT
 
-            for i, kh in enumerate(kh_plot):
-                tc, tc_ss = TTA_COLORS[i % len(TTA_COLORS)]
+            try:
+                path = get_file(n=n_tta, model="tta", date=date_tta)
+                kex_tta, photons, photons_homo, params_tta = _normalize_tta(load_sweep(path))
+                kh_list = list(photons.keys())
+                _print_file_info("TTA", path, kex_tta, params_tta,
+                                 extra=[f"k_h   : {kh_list}",
+                                        f"homo  : {photons_homo is not None}"])
+                if pulse_params is None:
+                    pulse_params = params_tta
 
-                ax.plot(_I_avg(kex_tta, params_tta),
-                        _cps(photons[kh], params_tta["T_total"]),
-                        color=tc, lw=LW, ls="-", label=f"TTA  k_h={kh:g}  pulsed")
+                effective_kh = kh_override if kh_override is not None else KH_PLOT
+                kh_plot = [kh for kh in kh_list if effective_kh is None or kh in effective_kh]
+                if not kh_plot:
+                    print(f"  [skip] no k_h matched (available: {kh_list})")
+                    continue
 
-                if SHOW_HOMO and photons_homo is not None:
+                t_on = params_tta["t_on"]
+
+                for kh in kh_plot:
+                    tc    = TTA_COLORS[tta_color_idx % len(TTA_COLORS)]
+                    tc_ss = TTA_SS_COLORS[tta_color_idx % len(TTA_SS_COLORS)]
+                    tta_color_idx += 1
+
                     ax.plot(_I_avg(kex_tta, params_tta),
-                            _cps(photons_homo[kh], params_tta["T_total"]),
-                            color=tc, lw=LW, ls="--", label=f"TTA  k_h={kh:g}  pulsed  homoTTA")
-
-                if SHOW_SS:
-                    print(f"  SS TTA  k_h={kh:g}  hetero ...")
-                    _, k_ss, _ = sweep_tta(kex_tta, n_med=params_tta["n_med"], k_h=kh,
-                                           k_decay=params_tta["k_decay"], homo_tta=False,
-                                           f_spin=params_tta["f_spin"])
-                    ax.plot(_I_peak(kex_tta), k_ss * _PER_NS,
-                            color=tc_ss, lw=LW, ls="-",
-                            label=f"TTA  k_h={kh:g}  CW")
+                            _cps(photons[kh], params_tta["T_total"]),
+                            color=tc, lw=LW, ls="-",
+                            label=f"TTA  k_h={kh:g}  t_on={t_on:g}  pulsed")
 
                     if SHOW_HOMO and photons_homo is not None:
-                        print(f"  SS TTA  k_h={kh:g}  homo ...")
-                        _, k_ss_homo, _ = sweep_tta(kex_tta, n_med=params_tta["n_med"], k_h=kh,
-                                                     k_decay=params_tta["k_decay"], homo_tta=True,
-                                                     f_spin=params_tta["f_spin"])
-                        ax.plot(_I_peak(kex_tta), k_ss_homo * _PER_NS,
-                                color=tc_ss, lw=LW, ls="--",
-                                label=f"TTA  k_h={kh:g}  CW  homoTTA")
+                        ax.plot(_I_avg(kex_tta, params_tta),
+                                _cps(photons_homo[kh], params_tta["T_total"]),
+                                color=tc, lw=LW, ls="--",
+                                label=f"TTA  k_h={kh:g}  t_on={t_on:g}  pulsed  homoTTA")
 
-        except FileNotFoundError as e:
-            print(f"[skip TTA] {e}")
+                    if SHOW_SS:
+                        print(f"  SS TTA  k_h={kh:g}  hetero ...")
+                        _, k_ss, _ = sweep_tta(kex_tta, n_med=params_tta["n_med"], k_h=kh,
+                                               k_decay=params_tta["k_decay"], homo_tta=False,
+                                               f_spin=params_tta["f_spin"])
+                        ax.plot(_I_peak(kex_tta), k_ss * _PER_NS,
+                                color=tc_ss, lw=LW, ls="-",
+                                label=f"TTA  k_h={kh:g}  CW")
+
+                        if SHOW_HOMO and photons_homo is not None:
+                            print(f"  SS TTA  k_h={kh:g}  homo ...")
+                            _, k_ss_homo, _ = sweep_tta(kex_tta, n_med=params_tta["n_med"], k_h=kh,
+                                                         k_decay=params_tta["k_decay"], homo_tta=True,
+                                                         f_spin=params_tta["f_spin"])
+                            ax.plot(_I_peak(kex_tta), k_ss_homo * _PER_NS,
+                                    color=tc_ss, lw=LW, ls="--",
+                                    label=f"TTA  k_h={kh:g}  CW  homoTTA")
+
+            except FileNotFoundError as e:
+                print(f"[skip TTA] {e}")
 
     # ── Title ─────────────────────────────────────────────────────────────────
-    title = "Model Comparison  |  Pulsed (light)  ·  CW (dark)  ·  homoTTA (dashed)"
+    title = "Model Comparison  |  Pulsed / CW (separate colors)  ·  homoTTA (dashed)"
     if pulse_params is not None:
         t_on    = pulse_params["t_on"]
         T_total = pulse_params["T_total"]

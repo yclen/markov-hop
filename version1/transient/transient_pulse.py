@@ -12,7 +12,7 @@ from models import build_1p_matrix, build_2p_matrix, build_tta_matrix
 # ── Parameters ────────────────────────────────────────────────────────────────
 
 # Run control
-RUN_MODELS = ["2p", "tta"]   # any subset of ["1p", "2p", "tta"]
+RUN_MODELS = ["tta"]   # any subset of ["1p", "2p", "tta"]
 
 # Numerics
 P_MAX    = 0.1       # max probability per step — each model picks dt = P_MAX / max(rates)
@@ -20,11 +20,11 @@ T_TOTAL  = 200.0      # total simulation time
 UNITS    = "ns"
 
 # Excitation profile
-kex=1e-5
-MODE      = "pulse"   # "CW" | "pulse" | "pulse_train"
-T_ON      = 200
-T_OFF     = 3.0
-N_PULSES  = 3
+kex=1e-4
+MODE      = "pulse_train"   # "CW" | "pulse" | "pulse_train"
+T_ON      = 10
+T_OFF     = 20.0
+N_PULSES  = 5
 
 # 1p model
 KEX_1P    = kex
@@ -41,7 +41,7 @@ KFLUOR_2P = KFLUOR_1P
 N_MED      = 4
 KH_TTA     = 10.0
 KEX_TTA    = kex
-KDECAY_TTA = 0.01
+KDECAY_TTA = 1e-5
 HOMO_TTA   = True
 F_SPIN     = 1
 
