@@ -1,6 +1,6 @@
 # Claude's Notes — version1 changes
 
-Changes made during the session on 2026-04-29.
+Changes made across sessions on 2026-04-29 and 2026-04-30.
 
 ---
 
@@ -129,3 +129,40 @@ pulse width = 100 ns  ·  Rep Rate = 5e+06 Hz
 Pulse metrics are collected from the first successfully loaded transient file (`pulse_params` collector).
 
 **On load**, each file prints its path, k_ex range, available k_h values, and all non-bookkeeping params to the console.
+
+---
+
+## comparisons/plot_comparison.py — multi-TTA-file support + color overhaul (2026-04-30)
+
+### Multi-file TTA loading
+
+`DATE_TTA / N_TTA` replaced with a `TTA_FILES` list of dicts:
+```python
+TTA_FILES = [
+    {"date": None, "n": 0},          # most recent file today
+    {"date": None, "n": 1},          # second most recent today
+    # {"date": "2026-04-28", "n": 0},   # specific date
+    # {"date": None, "n": 1, "kh_plot": [1.0]},  # per-file k_h override
+]
+```
+Each entry is a separate sweep file (different pulse parameters, different `t_on`, etc.).  
+A global `tta_color_idx` increments across all files × k_h values so colors never repeat between files.  
+Per-file `kh_plot` key overrides the global `KH_PLOT` for that file only.
+
+### Color palette overhaul
+
+Adopted the proto7 tab: color palette. Dropped the light/dark shade convention; instead, pulsed and CW lines use **completely separate named color variables**:
+
+```python
+COLOR_1P_SS    = "blue";          COLOR_1P    = "cornflowerblue"
+COLOR_2P_SS    = "red";           COLOR_2P    = "tomato"
+TTA_COLORS     = ["tab:orange", "tab:green", "tab:purple", "tab:brown", ...]
+TTA_SS_COLORS  = ["goldenrod",  "darkgreen",  "orchid",    "sienna",   ...]
+```
+
+### Label and title updates
+
+- Pulsed TTA labels include `t_on`: `"TTA  k_h=10  t_on=100  pulsed"`
+- CW TTA labels: `"TTA  k_h=10  CW"`
+- Title: `"Model Comparison  |  Pulsed / CW (separate colors)  ·  homoTTA (dashed)"`
+- Second title line (when any transient file loaded): `"pulse width = 100 ns  ·  Rep Rate = 5e+06 Hz"`
